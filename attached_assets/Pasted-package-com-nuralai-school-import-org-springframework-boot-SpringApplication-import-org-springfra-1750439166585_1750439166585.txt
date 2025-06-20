@@ -1,0 +1,148 @@
+package com.nuralai.school;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import jakarta.persistence.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+
+/*
+© 2025 Ervin Remus Radosavlevici
+Emails: ervin210@icloud.com | ervin.radosavlevici@mail.com
+All rights reserved.
+*/
+
+@SpringBootApplication
+@RestController
+@RequestMapping("/api")
+public class NuralaiSchoolApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(NuralaiSchoolApplication.class, args);
+    }
+
+    // JPA Entities
+
+    @Entity
+    public static class Student {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        public Long id;
+        public String name;
+        public String email;
+        // getters and setters omitted for brevity
+    }
+
+    @Entity
+    public static class Course {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        public Long id;
+        public String title;
+        public String description;
+        // getters and setters omitted for brevity
+    }
+
+    // JPA Repositories
+
+    public interface StudentRepository extends JpaRepository<Student, Long> {}
+    public interface CourseRepository extends JpaRepository<Course, Long> {}
+
+    // Certificate generation service
+
+    @Service
+    public static class CertificateService {
+
+        public byte[] generateCertificate(String studentName, String courseTitle) throws Exception {
+            PDDocument document = new PDDocument();
+            PDPage page = new PDPage();
+            document.addPage(page);
+
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_BOLD, 26);
+            contentStream.newLineAtOffset(100, 700);
+            contentStream.showText("Nuralai School Certificate");
+            contentStream.endText();
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, 16);
+            contentStream.newLineAtOffset(100, 650);
+            contentStream.showText("This certifies that " + studentName);
+            contentStream.endText();
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, 16);
+            contentStream.newLineAtOffset(100, 620);
+            contentStream.showText("has completed the course: " + courseTitle);
+            contentStream.endText();
+
+            contentStream.setNonStrokingColor(200, 200, 200);
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD_OBLIQUE, 50);
+            contentStream.setTextRotation(Math.toRadians(45), 150, 400);
+            contentStream.showText("© 2025 Ervin Remus Radosavlevici - Nuralai School");
+            contentStream.endText();
+
+            contentStream.close();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            document.save(baos);
+            document.close();
+
+            return baos.toByteArray();
+        }
+    }
+
+    @Autowired
+    private StudentRepository studentRepo;
+
+    @Autowired
+    private CourseRepository courseRepo;
+
+    @Autowired
+    private CertificateService certificateService;
+
+    // API endpoints
+
+    @PostMapping("/students")
+    public Student addStudent(@RequestBody Student student) {
+        return studentRepo.save(student);
+    }
+
+    @GetMapping("/students")
+    public List<Student> listStudents() {
+        return studentRepo.findAll();
+    }
+
+    @PostMapping("/courses")
+    public Course addCourse(@RequestBody Course course) {
+        return courseRepo.save(course);
+    }
+
+    @GetMapping("/courses")
+    public List<Course> listCourses() {
+        return courseRepo.findAll();
+    }
+
+    @GetMapping("/certificates/generate")
+    public ResponseEntity<byte[]> generateCertificate(@RequestParam String studentName, @RequestParam String courseTitle) throws Exception {
+        byte[] pdfBytes = certificateService.generateCertificate(studentName, courseTitle);
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"certificate.pdf\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdfBytes);
+    }
+}

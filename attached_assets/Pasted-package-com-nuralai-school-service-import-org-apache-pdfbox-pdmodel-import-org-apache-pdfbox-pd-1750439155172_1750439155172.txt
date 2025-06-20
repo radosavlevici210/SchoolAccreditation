@@ -1,0 +1,81 @@
+package com.nuralai.school.service;
+
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureWidget;
+import org.springframework.stereotype.Service;
+
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
+
+@Service
+public class CertificateService {
+
+    public byte[] generateCertificateWithSignature(String studentName, String courseTitle) throws Exception {
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+
+        // Add certificate content
+        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_BOLD, 26);
+            contentStream.newLineAtOffset(100, 700);
+            contentStream.showText("Nuralai School Certificate");
+            contentStream.endText();
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, 16);
+            contentStream.newLineAtOffset(100, 650);
+            contentStream.showText("This certifies that " + studentName);
+            contentStream.endText();
+
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.TIMES_ROMAN, 16);
+            contentStream.newLineAtOffset(100, 620);
+            contentStream.showText("has completed the course: " + courseTitle);
+            contentStream.endText();
+
+            // Watermark
+            contentStream.setNonStrokingColor(200, 200, 200); // light gray
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD_OBLIQUE, 50);
+            contentStream.setTextRotation(Math.toRadians(45), 150, 400);
+            contentStream.showText("© 2025 Ervin Remus Radosavlevici - Nuralai School");
+            contentStream.endText();
+        }
+
+        // Create signature form field placeholder
+        PDAcroForm acroForm = new PDAcroForm(document);
+        document.getDocumentCatalog().setAcroForm(acroForm);
+
+        PDSignatureField signatureField = new PDSignatureField(acroForm);
+        PDSignatureWidget widget = signatureField.getWidgets().get(0);
+
+        // Position signature field (e.g., bottom right)
+        widget.setRectangle(new PDRectangle(400, 100, 150, 50));
+        widget.setPage(page);
+        page.getAnnotations().add(widget);
+
+        acroForm.getFields().add(signatureField);
+
+        // Set some signature metadata (optional)
+        PDSignature signature = new PDSignature();
+        signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+        signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+        signature.setName("Nuralai School");
+        signature.setLocation("United Kingdom");
+        signature.setReason("Certificate Authorization");
+        signature.setSignDate(Calendar.getInstance());
+        signatureField.setSignature(signature);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        document.save(baos);
+        document.close();
+
+        return baos.toByteArray();
+    }
+}

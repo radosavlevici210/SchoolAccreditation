@@ -1,0 +1,52 @@
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.util.Calendar;
+
+public class DigitalSigner implements SignatureInterface {
+
+    private PrivateKey privateKey;
+    private Certificate[] certificateChain;
+
+    public DigitalSigner(String keystorePath, String keystorePassword, String alias, String keyPassword) throws Exception {
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        try (InputStream is = new FileInputStream(keystorePath)) {
+            keystore.load(is, keystorePassword.toCharArray());
+        }
+        privateKey = (PrivateKey) keystore.getKey(alias, keyPassword.toCharArray());
+        certificateChain = keystore.getCertificateChain(alias);
+    }
+
+    @Override
+    public byte[] sign(InputStream content) throws IOException {
+        // Implement the signing of the content stream here using BouncyCastle or another library
+        // This is complex and requires cryptographic knowledge
+        // For full working code, you may use examples from PDFBox or external libraries
+        return new byte[0]; // placeholder
+    }
+
+    public void signPDF(String inputPdf, String outputPdf) throws Exception {
+        try (PDDocument doc = PDDocument.load(new File(inputPdf))) {
+            PDSignature signature = new PDSignature();
+            signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+            signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+            signature.setName("Nuralai School");
+            signature.setLocation("UK");
+            signature.setReason("Certificate Authentication");
+            signature.setSignDate(Calendar.getInstance());
+
+            SignatureOptions options = new SignatureOptions();
+            options.setPreferredSignatureSize(8192);
+
+            doc.addSignature(signature, this, options);
+            doc.saveIncremental(new FileOutputStream(outputPdf));
+        }
+    }
+}
