@@ -28,7 +28,7 @@ export class CertificateGenerator {
            });
         doc.fontSize(20)
            .fillColor('#F3F4F6')
-           .text('UKPRN: 10008000 - INTERNATIONALLY ACCREDITED', 0, 400, {
+           .text('EDUCATIONAL INSTITUTION - INTERNATIONALLY RECOGNIZED', 0, 400, {
              align: 'center',
              width: 600
            });
@@ -76,7 +76,7 @@ export class CertificateGenerator {
           doc.text(`Grade: ${certificate.grade}`, 50, 470);
         }
 
-        doc.text('UKPRN: 10008000 - OFFICIAL', 350, 470);
+        doc.text('Educational Institution', 350, 470);
         doc.text('INTERNATIONALLY ACCREDITED', 350, 485);
 
         // Digital signature placeholder

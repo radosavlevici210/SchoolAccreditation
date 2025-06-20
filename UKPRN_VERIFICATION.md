@@ -1,13 +1,12 @@
-# UKPRN Official Verification Document
+# Educational Institution Information
 
-## Institution Registration Details
+## Institution Details
 
-**UK Provider Reference Number (UKPRN)**: 10008000  
 **Institution Name**: Nuralai School  
-**Legal Entity**: Educational Provider  
-**Registration Status**: Active and Compliant  
-**Registration Date**: January 2025  
-**Renewal Date**: January 2026  
+**Legal Entity**: Educational Services Provider  
+**Registration Status**: Private Educational Institution  
+**Established**: January 2025  
+**Status**: Active Educational Services Provider  
 
 ## Registered Owner Information
 
