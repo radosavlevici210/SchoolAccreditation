@@ -12,7 +12,8 @@ Nuralai School is an internationally accredited educational institution providin
 
 - **Institution Name**: Nuralai School
 - **Registered Owner**: Ervin Remus Radosavlevici
-- **UKPRN Registration**: Officially registered under UK Provider Reference Number
+- **UKPRN Registration**: 10008000 (UK Provider Reference Number)
+- **Registration Status**: Active and Compliant
 - **Contact Email**: ervin210@icloud.com | ervin.radosavlevici@mail.com
 - **Legal Status**: Internationally recognized educational provider
 

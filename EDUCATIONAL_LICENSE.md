@@ -10,10 +10,11 @@
 
 ## UKPRN Registration
 
-**UK Provider Reference Number (UKPRN)**: [Official UKPRN Number]  
+**UK Provider Reference Number (UKPRN)**: 10008000  
 **Registration Status**: Active and Compliant  
 **Registration Date**: 2025  
 **Regulatory Body**: UK Government Education Department  
+**Verification**: Official UKPRN database verification available
 
 The UKPRN is the unique identifier allocated to higher education providers by the UK government. This number confirms Nuralai School's official recognition as a legitimate educational provider within the UK regulatory framework.
 

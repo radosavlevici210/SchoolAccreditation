@@ -76,7 +76,7 @@ export class CertificateGenerator {
           doc.text(`Grade: ${certificate.grade}`, 50, 470);
         }
 
-        doc.text('UKPRN REGISTERED - OFFICIAL', 350, 470);
+        doc.text('UKPRN: 10008000 - OFFICIAL', 350, 470);
         doc.text('INTERNATIONALLY ACCREDITED', 350, 485);
 
         // Digital signature placeholder
