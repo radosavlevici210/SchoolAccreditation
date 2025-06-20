@@ -87,7 +87,12 @@ export class MemStorage implements IStorage {
   async createStudent(insertStudent: InsertStudent): Promise<Student> {
     const id = this.currentStudentId++;
     const studentId = `NS-2025-${id.toString().padStart(3, '0')}`;
-    const student: Student = { ...insertStudent, id, studentId };
+    const student: Student = { 
+      ...insertStudent, 
+      id, 
+      studentId,
+      status: insertStudent.status || "active"
+    };
     this.students.set(id, student);
     return student;
   }
@@ -157,7 +162,14 @@ export class MemStorage implements IStorage {
     const id = this.currentCertificateId++;
     const certificateId = `NS-CERT-2025-${id.toString().padStart(3, '0')}`;
     const issueDate = new Date().toISOString().split('T')[0];
-    const certificate: Certificate = { ...insertCertificate, id, certificateId, issueDate };
+    const certificate: Certificate = { 
+      ...insertCertificate, 
+      id, 
+      certificateId, 
+      issueDate,
+      status: insertCertificate.status || "issued",
+      grade: insertCertificate.grade || null
+    };
     this.certificates.set(id, certificate);
     return certificate;
   }

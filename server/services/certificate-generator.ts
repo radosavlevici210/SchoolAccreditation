@@ -17,12 +17,18 @@ export class CertificateGenerator {
           resolve(pdfData);
         });
 
-        // Add watermark
+        // Add watermark - Legal Copyright Protection
         doc.save();
         doc.rotate(45, { origin: [300, 400] });
-        doc.fontSize(50)
+        doc.fontSize(40)
            .fillColor('#E5E7EB')
            .text('© 2025 Ervin Remus Radosavlevici - Nuralai School', 0, 350, {
+             align: 'center',
+             width: 600
+           });
+        doc.fontSize(20)
+           .fillColor('#F3F4F6')
+           .text('UKPRN REGISTERED - INTERNATIONALLY ACCREDITED', 0, 400, {
              align: 'center',
              width: 600
            });
@@ -70,7 +76,8 @@ export class CertificateGenerator {
           doc.text(`Grade: ${certificate.grade}`, 50, 470);
         }
 
-        doc.text('UKPRN Accredited', 350, 470);
+        doc.text('UKPRN REGISTERED - OFFICIAL', 350, 470);
+        doc.text('INTERNATIONALLY ACCREDITED', 350, 485);
 
         // Digital signature placeholder
         doc.rect(400, 500, 120, 50)
@@ -84,12 +91,25 @@ export class CertificateGenerator {
            .fillColor('#64748B')
            .text('Digital Signature', 420, 560);
 
+        // Legal Protection Notice
+        doc.fontSize(6)
+           .fillColor('#64748B')
+           .text('LEGALLY PROTECTED DOCUMENT - UNAUTHORIZED REPRODUCTION PROHIBITED', 0, 680, { align: 'center' });
+           
+        doc.fontSize(8)
+           .fillColor('#64748B')
+           .text('UKPRN REGISTERED INSTITUTION - INTERNATIONALLY ACCREDITED', 0, 695, { align: 'center' });
+
         // Copyright footer
         doc.fontSize(8)
            .fillColor('#64748B')
-           .text('© 2025 Ervin Remus Radosavlevici', 0, 700, { align: 'center' });
+           .text('© 2025 Ervin Remus Radosavlevici - Nuralai School', 0, 710, { align: 'center' });
 
-        doc.text('ervin210@icloud.com | ervin.radosavlevici@mail.com | All rights reserved.', 0, 715, { align: 'center' });
+        doc.text('ervin210@icloud.com | ervin.radosavlevici@mail.com | All rights reserved.', 0, 725, { align: 'center' });
+        
+        doc.fontSize(6)
+           .fillColor('#64748B')
+           .text('CPD Certified | ASIC Accredited | EduQual Aligned | GDPR Compliant | ISO/IEC 27001', 0, 740, { align: 'center' });
 
         doc.end();
       } catch (error) {

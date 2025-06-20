@@ -5,7 +5,25 @@ import { certificateGenerator } from "./services/certificate-generator";
 import { insertStudentSchema, insertCourseSchema, insertCertificateSchema } from "@shared/schema";
 import { z } from "zod";
 
+// Legal Compliance Middleware - Anti-Interference Protection
+const legalComplianceCheck = (req: any, res: any, next: any) => {
+  // Log all access for legal compliance
+  console.log(`[LEGAL-LOG] ${new Date().toISOString()} - Access: ${req.method} ${req.path} - IP: ${req.ip}`);
+  
+  // Add legal protection headers
+  res.setHeader('X-Legal-Owner', 'Ervin Remus Radosavlevici');
+  res.setHeader('X-Institution', 'Nuralai School');
+  res.setHeader('X-UKPRN-Status', 'Registered');
+  res.setHeader('X-Copyright', '© 2025 Ervin Remus Radosavlevici - All Rights Reserved');
+  res.setHeader('X-Legal-Warning', 'Interference with this system may result in registration cancellation and legal action');
+  
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Apply legal compliance middleware to all routes
+  app.use(legalComplianceCheck);
+  
   // Students routes
   app.get("/api/students", async (req, res) => {
     try {

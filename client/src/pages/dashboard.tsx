@@ -72,10 +72,11 @@ export default function Dashboard() {
               <p className="text-sm text-slate-600 mb-4">
                 Internationally accredited educational institution providing professional certification programs.
               </p>
-              <p className="text-xs text-slate-600">
-                © 2025 Ervin Remus Radosavlevici<br />
-                All rights reserved.
-              </p>
+              <div className="text-xs text-slate-600">
+                <p className="font-semibold text-red-600 mb-1">LEGALLY PROTECTED SYSTEM</p>
+                <p>© 2025 Ervin Remus Radosavlevici - All Rights Reserved</p>
+                <p>UKPRN Registered Institution - Interference Prohibited</p>
+              </div>
             </div>
             <div>
               <h3 className="font-semibold text-slate-900 mb-4">Accreditation</h3>

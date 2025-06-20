@@ -17,7 +17,10 @@ export default function Header() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-slate-600">UKPRN Accredited Institution</span>
+            <div className="text-right">
+              <span className="text-sm font-semibold text-green-600">UKPRN REGISTERED</span>
+              <div className="text-xs text-slate-600">Internationally Accredited</div>
+            </div>
             <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
               <User className="text-white text-sm" />
             </div>
