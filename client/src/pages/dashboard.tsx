@@ -75,7 +75,7 @@ export default function Dashboard() {
               <div className="text-xs text-slate-600">
                 <p className="font-semibold text-red-600 mb-1">LEGALLY PROTECTED SYSTEM</p>
                 <p>© 2025 Ervin Remus Radosavlevici - All Rights Reserved</p>
-                <p>UKPRN Registered Institution - Interference Prohibited</p>
+                <p>UKPRN: 10008000 - Interference Prohibited</p>
               </div>
             </div>
             <div>

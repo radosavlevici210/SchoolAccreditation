@@ -314,7 +314,7 @@ export default function CertificatesTab() {
                 <p className="text-xs text-slate-600">Digital Signature</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-600 mb-2">UKPRN Accredited</p>
+                <p className="text-sm text-slate-600 mb-2">UKPRN: 10008000</p>
                 <p className="font-medium text-slate-900">
                   Certificate ID: {previewData?.certificateId || "NS-CERT-2025-001"}
                 </p>

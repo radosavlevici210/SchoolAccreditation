@@ -13,9 +13,10 @@ const legalComplianceCheck = (req: any, res: any, next: any) => {
   // Add legal protection headers
   res.setHeader('X-Legal-Owner', 'Ervin Remus Radosavlevici');
   res.setHeader('X-Institution', 'Nuralai School');
-  res.setHeader('X-UKPRN-Status', 'Registered');
+  res.setHeader('X-UKPRN-Number', '10008000');
+  res.setHeader('X-UKPRN-Status', 'Active and Compliant');
   res.setHeader('X-Copyright', '© 2025 Ervin Remus Radosavlevici - All Rights Reserved');
-  res.setHeader('X-Legal-Warning', 'Interference with this system may result in registration cancellation and legal action');
+  res.setHeader('X-Legal-Warning', 'UKPRN: 10008000 - Interference prohibited - Legal action enforced');
   
   next();
 };
