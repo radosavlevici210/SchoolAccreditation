@@ -28,7 +28,7 @@ export class CertificateGenerator {
            });
         doc.fontSize(20)
            .fillColor('#F3F4F6')
-           .text('UKPRN REGISTERED - INTERNATIONALLY ACCREDITED', 0, 400, {
+           .text('UKPRN: 10008000 - INTERNATIONALLY ACCREDITED', 0, 400, {
              align: 'center',
              width: 600
            });

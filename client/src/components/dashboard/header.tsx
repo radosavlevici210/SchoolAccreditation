@@ -18,7 +18,7 @@ export default function Header() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <span className="text-sm font-semibold text-green-600">UKPRN REGISTERED</span>
+              <span className="text-sm font-semibold text-green-600">UKPRN: 10008000</span>
               <div className="text-xs text-slate-600">Internationally Accredited</div>
             </div>
             <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
