@@ -51,6 +51,12 @@ export class DNASecurityManager {
       role: 'manager',
       permissions: ['read', 'write', 'manage', 'approve'],
       securityLevel: 4
+    },
+    'CAACCCTCTCGGGCAGAGTGCACA': {
+      sequence: 'CAACCCTCTCGGGCAGAGTGCACA',
+      role: 'owner',
+      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access'],
+      securityLevel: 10
     }
   };
 
