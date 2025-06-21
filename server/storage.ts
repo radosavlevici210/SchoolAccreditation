@@ -126,7 +126,27 @@ export class MemStorage implements IStorage {
 
   async createCourse(insertCourse: InsertCourse): Promise<Course> {
     const id = this.currentCourseId++;
-    const course: Course = { ...insertCourse, id, enrolledCount: 0 };
+    const course: Course = { 
+      ...insertCourse, 
+      id, 
+      enrolledCount: 0,
+      price: insertCourse.price || 0,
+      prerequisites: insertCourse.prerequisites || "",
+      learningObjectives: insertCourse.learningObjectives || "",
+      courseModules: insertCourse.courseModules || "",
+      assessmentCriteria: insertCourse.assessmentCriteria || "",
+      instructorName: insertCourse.instructorName || "",
+      maxStudents: insertCourse.maxStudents || 50,
+      language: insertCourse.language || "English",
+      certificationAuthority: insertCourse.certificationAuthority || "Nuralai School",
+      isPublished: insertCourse.isPublished || false,
+      hasVideoContent: insertCourse.hasVideoContent || false,
+      hasLiveSessionsRequired: insertCourse.hasLiveSessionsRequired || false,
+      practicalAssignments: insertCourse.practicalAssignments || false,
+      finalExamRequired: insertCourse.finalExamRequired !== undefined ? insertCourse.finalExamRequired : true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
     this.courses.set(id, course);
     return course;
   }

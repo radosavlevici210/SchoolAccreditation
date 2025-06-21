@@ -26,6 +26,22 @@ export const courses = pgTable("courses", {
   category: text("category").notNull(),
   level: text("level").notNull(),
   enrolledCount: integer("enrolled_count").notNull().default(0),
+  price: integer("price").notNull().default(0),
+  prerequisites: text("prerequisites"),
+  learningObjectives: text("learning_objectives"),
+  courseModules: text("course_modules"),
+  assessmentCriteria: text("assessment_criteria"),
+  instructorName: text("instructor_name"),
+  maxStudents: integer("max_students").default(50),
+  language: text("language").default("English"),
+  certificationAuthority: text("certification_authority").default("Nuralai School"),
+  isPublished: boolean("is_published").default(false),
+  hasVideoContent: boolean("has_video_content").default(false),
+  hasLiveSessionsRequired: boolean("has_live_sessions_required").default(false),
+  practicalAssignments: boolean("practical_assignments").default(false),
+  finalExamRequired: boolean("final_exam_required").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const certificates = pgTable("certificates", {
@@ -54,6 +70,8 @@ export const insertStudentSchema = createInsertSchema(students).omit({
 export const insertCourseSchema = createInsertSchema(courses).omit({
   id: true,
   enrolledCount: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertCertificateSchema = createInsertSchema(certificates).omit({
