@@ -1,20 +1,34 @@
 import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/dashboard/header";
 import StatsCards from "@/components/dashboard/stats-cards";
 import StudentsTab from "@/components/dashboard/students-tab";
 import CoursesTab from "@/components/dashboard/courses-tab";
 import CertificatesTab from "@/components/dashboard/certificates-tab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DNAAuth from "@/components/dna-auth";
 import { Users, Book, Award } from "lucide-react";
 
 export default function Dashboard() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  const handleAuthChange = (isAuthenticated: boolean, userData?: any) => {
+    setAuthenticated(isAuthenticated);
+    setUser(userData);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <StatsCards />
-        
+        <div className="mb-6 flex justify-between items-start">
+          <div className="flex-1 mr-6">
+            <StatsCards />
+          </div>
+          <DNAAuth onAuthChange={handleAuthChange} />
+        </div>
+
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 mb-8">
           <Tabs defaultValue="students" className="w-full">
             <div className="border-b border-slate-200">
@@ -42,15 +56,15 @@ export default function Dashboard() {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <TabsContent value="students" className="p-6 mt-0">
               <StudentsTab />
             </TabsContent>
-            
+
             <TabsContent value="courses" className="p-6 mt-0">
               <CoursesTab />
             </TabsContent>
-            
+
             <TabsContent value="certificates" className="p-6 mt-0">
               <CertificatesTab />
             </TabsContent>

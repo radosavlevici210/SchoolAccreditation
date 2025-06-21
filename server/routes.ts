@@ -5,6 +5,77 @@ import { certificateGenerator } from "./services/certificate-generator";
 import { insertStudentSchema, insertCourseSchema, insertCertificateSchema } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
+import { DNASecurityManager } from "./dna-security";
+
+// DNA Authentication System
+class DNAAuthentication {
+  private static authenticatedUsers = new Map<string, {
+    dnaSequence: string;
+    role: string;
+    sessionToken: string;
+    expiresAt: number;
+  }>();
+
+  static generateSessionToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  static authenticate(req: any): { success: boolean; user?: any; error?: string } {
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.ip || req.connection.remoteAddress || '';
+    const metrics = DNASecurityManager.getSecurityMetrics(req);
+    
+    if (!metrics.profile) {
+      return { success: false, error: "Invalid DNA sequence - authentication failed" };
+    }
+
+    const sessionToken = this.generateSessionToken();
+    const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+    
+    const userKey = `${ip}:${userAgent}`;
+    this.authenticatedUsers.set(userKey, {
+      dnaSequence: metrics.dnaSequence,
+      role: metrics.profile.role,
+      sessionToken,
+      expiresAt
+    });
+
+    return {
+      success: true,
+      user: {
+        dnaSequence: metrics.dnaSequence,
+        role: metrics.profile.role,
+        permissions: metrics.profile.permissions,
+        securityLevel: metrics.profile.securityLevel,
+        trustScore: metrics.trustScore,
+        sessionToken,
+        expiresAt
+      }
+    };
+  }
+
+  static verifySession(req: any): { valid: boolean; user?: any } {
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.ip || req.connection.remoteAddress || '';
+    const userKey = `${ip}:${userAgent}`;
+    
+    const session = this.authenticatedUsers.get(userKey);
+    if (!session || session.expiresAt < Date.now()) {
+      this.authenticatedUsers.delete(userKey);
+      return { valid: false };
+    }
+
+    return { valid: true, user: session };
+  }
+
+  static logout(req: any): boolean {
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.ip || req.connection.remoteAddress || '';
+    const userKey = `${ip}:${userAgent}`;
+    
+    return this.authenticatedUsers.delete(userKey);
+  }
+}
 
 // DNA-based Security System
 class DNASecurity {
@@ -53,37 +124,120 @@ class DNASecurity {
   }
 }
 
-// DNA-based Security Middleware
-const dnaSecurityCheck = (req: any, res: any, next: any) => {
+// DNA Authentication Middleware
+const dnaAuthenticationCheck = (req: any, res: any, next: any) => {
   const timestamp = new Date().toISOString();
-  const dnaFingerprint = DNASecurity.validateDNAAccess(req);
-  const dnaRole = DNASecurity.getDNARole(req);
+  const metrics = DNASecurityManager.getSecurityMetrics(req);
+  const session = DNAAuthentication.verifySession(req);
   
   // Log DNA security analysis
-  console.log(`[DNA-SEC] ${timestamp} - ${req.method} ${req.path} - IP: ${req.ip} - DNA-Role: ${dnaRole}`);
+  console.log(`[DNA-AUTH] ${timestamp} - ${req.method} ${req.path} - IP: ${req.ip} - DNA-Role: ${metrics.profile?.role || 'guest'} - Session: ${session.valid ? 'Valid' : 'Invalid'}`);
   
   // Set DNA security headers
   res.setHeader('X-DNA-Security', 'Active');
-  res.setHeader('X-DNA-Role', dnaRole);
+  res.setHeader('X-DNA-Role', metrics.profile?.role || 'guest');
   res.setHeader('X-Institution', 'Nuralai School');
   res.setHeader('X-Bio-Auth', 'DNA-Fingerprint-Verified');
-  res.setHeader('X-Security-Level', dnaFingerprint ? 'Authenticated' : 'Guest');
+  res.setHeader('X-Security-Level', session.valid ? 'Authenticated' : 'Guest');
+  res.setHeader('X-Trust-Score', metrics.trustScore.toString());
   
-  // Enhanced security for sensitive operations
-  if (req.method !== 'GET' && !dnaFingerprint) {
-    console.log(`[DNA-SEC] ${timestamp} - BLOCKED: Invalid DNA sequence for ${req.method} ${req.path}`);
-    return res.status(403).json({ 
-      message: "DNA authentication required for this operation",
-      code: "DNA_AUTH_REQUIRED"
-    });
-  }
+  // Store authentication info in request
+  req.dnaAuth = {
+    metrics,
+    session,
+    isAuthenticated: session.valid
+  };
   
   next();
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply DNA-based security middleware to all routes
-  app.use(dnaSecurityCheck);
+  // Apply DNA authentication middleware to all routes
+  app.use(dnaAuthenticationCheck);
+
+  // DNA Authentication routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const authResult = DNAAuthentication.authenticate(req);
+      
+      if (!authResult.success) {
+        return res.status(401).json({ 
+          message: authResult.error,
+          code: "DNA_AUTH_FAILED"
+        });
+      }
+
+      console.log(`[DNA-AUTH] ${new Date().toISOString()} - LOGIN SUCCESS - IP: ${req.ip} - Role: ${authResult.user?.role}`);
+      
+      res.json({
+        message: "DNA authentication successful",
+        user: authResult.user,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Authentication system error" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const success = DNAAuthentication.logout(req);
+      
+      console.log(`[DNA-AUTH] ${new Date().toISOString()} - LOGOUT - IP: ${req.ip} - Success: ${success}`);
+      
+      res.json({
+        message: success ? "Logout successful" : "No active session found",
+        success
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Logout system error" });
+    }
+  });
+
+  app.get("/api/auth/status", async (req, res) => {
+    try {
+      const session = DNAAuthentication.verifySession(req);
+      const metrics = DNASecurityManager.getSecurityMetrics(req);
+      
+      res.json({
+        authenticated: session.valid,
+        user: session.user || null,
+        dnaMetrics: {
+          sequence: metrics.dnaSequence,
+          profile: metrics.profile,
+          trustScore: metrics.trustScore
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Status check error" });
+    }
+  });
+
+  // Protected route middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.dnaAuth?.isAuthenticated) {
+      return res.status(401).json({ 
+        message: "DNA authentication required for this operation",
+        code: "DNA_AUTH_REQUIRED"
+      });
+    }
+    next();
+  };
+
+  // Permission check middleware
+  const requirePermission = (permission: string) => {
+    return (req: any, res: any, next: any) => {
+      const profile = req.dnaAuth?.metrics?.profile;
+      if (!profile || !DNASecurityManager.validatePermission(profile, permission)) {
+        return res.status(403).json({
+          message: `Insufficient permissions. Required: ${permission}`,
+          code: "INSUFFICIENT_PERMISSIONS"
+        });
+      }
+      next();
+    };
+  };
   
   // Students routes
   app.get("/api/students", async (req, res) => {
@@ -95,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/students", async (req, res) => {
+  app.post("/api/students", requireAuth, requirePermission('write'), async (req, res) => {
     try {
       const validatedData = insertStudentSchema.parse(req.body);
       
@@ -115,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/students/:id", async (req, res) => {
+  app.put("/api/students/:id", requireAuth, requirePermission('write'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
@@ -131,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/students/:id", async (req, res) => {
+  app.delete("/api/students/:id", requireAuth, requirePermission('delete'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteStudent(id);
@@ -156,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courses", async (req, res) => {
+  app.post("/api/courses", requireAuth, requirePermission('write'), async (req, res) => {
     try {
       const validatedData = insertCourseSchema.parse(req.body);
       
@@ -176,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/courses/:id", async (req, res) => {
+  app.put("/api/courses/:id", requireAuth, requirePermission('write'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
@@ -192,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/courses/:id", async (req, res) => {
+  app.delete("/api/courses/:id", requireAuth, requirePermission('delete'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteCourse(id);
@@ -217,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/certificates", async (req, res) => {
+  app.post("/api/certificates", requireAuth, requirePermission('write'), async (req, res) => {
     try {
       const validatedData = insertCertificateSchema.parse(req.body);
       
