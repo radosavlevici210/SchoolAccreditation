@@ -4,25 +4,86 @@ import { storage } from "./storage";
 import { certificateGenerator } from "./services/certificate-generator";
 import { insertStudentSchema, insertCourseSchema, insertCertificateSchema } from "@shared/schema";
 import { z } from "zod";
+import crypto from "crypto";
 
-// Legal Compliance Middleware - Anti-Interference Protection
-const legalComplianceCheck = (req: any, res: any, next: any) => {
-  // Log all access for legal compliance
-  console.log(`[LEGAL-LOG] ${new Date().toISOString()} - Access: ${req.method} ${req.path} - IP: ${req.ip}`);
+// DNA-based Security System
+class DNASecurity {
+  private static dnaSequences = {
+    admin: 'ATCGATCGATCG',
+    student: 'GCTAGCTAGCTA',
+    instructor: 'TTAACCGGTTAA',
+    system: 'AAAATTTTCCCC'
+  };
+
+  private static generateDNAFingerprint(userAgent: string, ip: string): string {
+    const hash = crypto.createHash('sha256').update(userAgent + ip).digest('hex');
+    return hash.substring(0, 12).replace(/[0-9a-f]/g, (char) => {
+      const map: { [key: string]: string } = {
+        '0': 'A', '1': 'T', '2': 'C', '3': 'G',
+        '4': 'A', '5': 'T', '6': 'C', '7': 'G',
+        '8': 'A', '9': 'T', 'a': 'C', 'b': 'G',
+        'c': 'A', 'd': 'T', 'e': 'C', 'f': 'G'
+      };
+      return map[char];
+    });
+  }
+
+  static validateDNAAccess(req: any): boolean {
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.ip || req.connection.remoteAddress;
+    const dnaFingerprint = this.generateDNAFingerprint(userAgent, ip);
+    
+    // Allow access if DNA fingerprint contains valid sequences
+    return Object.values(this.dnaSequences).some(sequence => 
+      dnaFingerprint.includes(sequence.substring(0, 6))
+    );
+  }
+
+  static getDNARole(req: any): string {
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = req.ip || req.connection.remoteAddress;
+    const dnaFingerprint = this.generateDNAFingerprint(userAgent, ip);
+    
+    for (const [role, sequence] of Object.entries(this.dnaSequences)) {
+      if (dnaFingerprint.includes(sequence.substring(0, 6))) {
+        return role;
+      }
+    }
+    return 'guest';
+  }
+}
+
+// DNA-based Security Middleware
+const dnaSecurityCheck = (req: any, res: any, next: any) => {
+  const timestamp = new Date().toISOString();
+  const dnaFingerprint = DNASecurity.validateDNAAccess(req);
+  const dnaRole = DNASecurity.getDNARole(req);
   
-  // Add legal protection headers
-  res.setHeader('X-Legal-Owner', 'Ervin Remus Radosavlevici');
+  // Log DNA security analysis
+  console.log(`[DNA-SEC] ${timestamp} - ${req.method} ${req.path} - IP: ${req.ip} - DNA-Role: ${dnaRole}`);
+  
+  // Set DNA security headers
+  res.setHeader('X-DNA-Security', 'Active');
+  res.setHeader('X-DNA-Role', dnaRole);
   res.setHeader('X-Institution', 'Nuralai School');
-  res.setHeader('X-Institution-Type', 'Educational Services Provider');
-  res.setHeader('X-Copyright', '© 2025 Ervin Remus Radosavlevici - All Rights Reserved');
-  res.setHeader('X-Legal-Warning', 'Educational Institution - Interference prohibited - Legal action enforced');
+  res.setHeader('X-Bio-Auth', 'DNA-Fingerprint-Verified');
+  res.setHeader('X-Security-Level', dnaFingerprint ? 'Authenticated' : 'Guest');
+  
+  // Enhanced security for sensitive operations
+  if (req.method !== 'GET' && !dnaFingerprint) {
+    console.log(`[DNA-SEC] ${timestamp} - BLOCKED: Invalid DNA sequence for ${req.method} ${req.path}`);
+    return res.status(403).json({ 
+      message: "DNA authentication required for this operation",
+      code: "DNA_AUTH_REQUIRED"
+    });
+  }
   
   next();
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply legal compliance middleware to all routes
-  app.use(legalComplianceCheck);
+  // Apply DNA-based security middleware to all routes
+  app.use(dnaSecurityCheck);
   
   // Students routes
   app.get("/api/students", async (req, res) => {
