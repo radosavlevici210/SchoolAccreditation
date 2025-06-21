@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,23 +41,27 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         toast({
-          title: "DNA Authentication Successful",
-          description: `Welcome! Role: ${data.user.role}`,
+          title: "🧬 DNA Authentication Successful",
+          description: `Welcome! Role: ${data.user.role} | Security Level: ${data.user.securityLevel}`,
         });
+        console.log('✅ Authentication successful:', data.user);
         await checkAuthStatus();
       } else {
+        const errorMsg = data.error || data.message || "DNA sequence not recognized";
         toast({
-          title: "Authentication Failed",
-          description: data.message,
+          title: "🚫 DNA Authentication Failed",
+          description: `${errorMsg} | Sequence: ${data.dnaSequence || 'Unknown'}`,
           variant: "destructive",
         });
+        console.log('❌ Authentication failed:', data);
       }
     } catch (error) {
+      console.error('Authentication error:', error);
       toast({
-        title: "Connection Error",
-        description: "Unable to connect to authentication system",
+        title: "🔒 Authentication Error",
+        description: "Failed to connect to DNA authentication system",
         variant: "destructive",
       });
     } finally {
@@ -130,7 +133,7 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
               <CheckCircle className="w-5 h-5 text-green-500" />
               <span className="font-medium">Authenticated</span>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Role:</span>
@@ -138,14 +141,14 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
                   {authStatus.user.role}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Security Level:</span>
                 <Badge variant="outline">
                   Level {authStatus.user.securityLevel}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Trust Score:</span>
                 <Badge variant="secondary">
@@ -153,14 +156,14 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
                 </Badge>
               </div>
             </div>
-            
+
             <div className="pt-2">
               <p className="text-xs text-muted-foreground mb-2">DNA Sequence:</p>
               <code className="text-xs bg-muted p-2 rounded block">
                 {authStatus.dnaMetrics.sequence}
               </code>
             </div>
-            
+
             <Button 
               onClick={handleLogout} 
               variant="outline" 
@@ -175,7 +178,7 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
               <XCircle className="w-5 h-5 text-red-500" />
               <span className="font-medium">Not Authenticated</span>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Trust Score:</span>
@@ -184,14 +187,14 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
                 </Badge>
               </div>
             </div>
-            
+
             <div className="pt-2">
               <p className="text-xs text-muted-foreground mb-2">DNA Sequence:</p>
               <code className="text-xs bg-muted p-2 rounded block">
                 {authStatus.dnaMetrics.sequence}
               </code>
             </div>
-            
+
             <Button 
               onClick={handleLogin} 
               disabled={loading}
