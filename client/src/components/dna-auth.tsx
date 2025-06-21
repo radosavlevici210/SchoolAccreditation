@@ -41,7 +41,7 @@ export default function DNAAuth({ onAuthChange }: DNAAuthProps) {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (response.ok && (data.success || data.user)) {
         toast({
           title: "🧬 DNA Authentication Successful",
           description: `Welcome! Role: ${data.user.role} | Security Level: ${data.user.securityLevel}`,
