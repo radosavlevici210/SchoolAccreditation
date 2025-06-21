@@ -1,4 +1,3 @@
-
 import crypto from "crypto";
 
 export interface DNAProfile {
@@ -10,52 +9,16 @@ export interface DNAProfile {
 
 export class DNASecurityManager {
   private static readonly DNA_PROFILES: { [key: string]: DNAProfile } = {
-    'ATCGATCGATCG': {
-      sequence: 'ATCGATCGATCG',
-      role: 'admin',
-      permissions: ['read', 'write', 'delete', 'manage'],
-      securityLevel: 5
-    },
-    'GCTAGCTAGCTA': {
-      sequence: 'GCTAGCTAGCTA', 
-      role: 'student',
-      permissions: ['read', 'enroll'],
-      securityLevel: 2
-    },
-    'TTAACCGGTTAA': {
-      sequence: 'TTAACCGGTTAA',
-      role: 'instructor',
-      permissions: ['read', 'write', 'grade'],
-      securityLevel: 4
-    },
-    'AAAATTTTCCCC': {
-      sequence: 'AAAATTTTCCCC',
-      role: 'system',
-      permissions: ['read', 'write', 'monitor'],
-      securityLevel: 3
-    },
-    'ACGGAGGAAGCC': {
-      sequence: 'ACGGAGGAAGCC',
-      role: 'superadmin',
-      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security'],
-      securityLevel: 6
-    },
-    'GCCGAGGCGGGT': {
-      sequence: 'GCCGAGGCGGGT',
-      role: 'developer',
-      permissions: ['read', 'write', 'debug', 'deploy'],
-      securityLevel: 5
-    },
-    'GAGGCGGGTAAT': {
-      sequence: 'GAGGCGGGTAAT',
-      role: 'manager',
-      permissions: ['read', 'write', 'manage', 'approve'],
-      securityLevel: 4
-    },
     'CAACCCTCTCGGGCAGAGTGCACA': {
       sequence: 'CAACCCTCTCGGGCAGAGTGCACA',
       role: 'owner',
-      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access'],
+      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access', 'suspend', 'create', 'modify'],
+      securityLevel: 10
+    },
+    'AAGATGCTACCCCCAACACCTCGC': {
+      sequence: 'AAGATGCTACCCCCAACACCTCGC',
+      role: 'system',
+      permissions: ['read', 'write', 'delete', 'manage', 'override', 'security', 'admin', 'full_access', 'monitor', 'execute'],
       securityLevel: 10
     }
   };
@@ -79,56 +42,61 @@ export class DNASecurityManager {
 
   static analyzeDNAPattern(dnaSequence: string): DNAProfile | null {
     console.log(`[DNA-ANALYSIS] Analyzing sequence: ${dnaSequence}`);
-    
-    // Check each profile with detailed logging
+
+    // Check only the two authorized sequences
     for (const [key, profile] of Object.entries(this.DNA_PROFILES)) {
       const matches = this.sequenceMatch(dnaSequence, profile.sequence);
       console.log(`[DNA-ANALYSIS] Checking ${profile.role} (${key}): ${matches ? 'MATCH' : 'NO MATCH'}`);
-      
+
       if (matches) {
         console.log(`[DNA-ANALYSIS] ✅ Authentication successful - Role: ${profile.role}, Security Level: ${profile.securityLevel}`);
         return profile;
       }
     }
-    
-    console.log(`[DNA-ANALYSIS] ❌ No matching profile found for sequence: ${dnaSequence}`);
+
+    console.log(`[DNA-ANALYSIS] ❌ ACCESS SUSPENDED - Only authorized sequences allowed`);
     return null;
   }
 
   private static sequenceMatch(input: string, target: string): boolean {
-    // Multiple matching strategies for better authentication
-    
-    // 1. Direct substring match (most accurate)
+    // Enhanced matching for authorized sequences
+
+    // 1. Exact match (highest priority)
+    if (input === target || target === input) {
+      return true;
+    }
+
+    // 2. Direct substring match
     if (input.includes(target) || target.includes(input)) {
       return true;
     }
-    
-    // 2. Check for partial sequences (sliding window)
-    const windowSize = Math.min(8, target.length);
+
+    // 3. Check for partial sequences (sliding window)
+    const windowSize = Math.min(12, target.length);
     for (let i = 0; i <= target.length - windowSize; i++) {
       const segment = target.substring(i, i + windowSize);
       if (input.includes(segment)) {
         return true;
       }
     }
-    
-    // 3. Position-based similarity (original method, lowered threshold)
+
+    // 4. Position-based similarity (strict for security)
     const minLength = Math.min(input.length, target.length);
     let matches = 0;
-    
+
     for (let i = 0; i < minLength; i++) {
       if (input[i] === target[i]) {
         matches++;
       }
     }
-    
+
     const similarity = matches / minLength;
-    return similarity >= 0.4; // Lowered from 0.6 to 0.4 for better access
+    return similarity >= 0.8; // High threshold for authorized access only
   }
 
   static validatePermission(dnaProfile: DNAProfile | null, requiredPermission: string): boolean {
     if (!dnaProfile) return false;
-    return dnaProfile.permissions.includes(requiredPermission);
+    return dnaProfile.permissions.includes(requiredPermission) || dnaProfile.permissions.includes('full_access');
   }
 
   static getSecurityMetrics(req: any): {
@@ -140,13 +108,13 @@ export class DNASecurityManager {
     const userAgent = req.headers['user-agent'] || '';
     const ip = req.ip || req.connection.remoteAddress || '';
     const timestamp = Date.now();
-    
+
     const biometricHash = this.generateBiometricHash(userAgent, ip, timestamp);
     const dnaSequence = this.convertHashToDNA(biometricHash);
     const profile = this.analyzeDNAPattern(dnaSequence);
-    
-    const trustScore = profile ? profile.securityLevel * 20 : 10;
-    
+
+    const trustScore = profile ? profile.securityLevel * 20 : 0; // Zero trust for unauthorized
+
     return {
       dnaSequence,
       profile,
