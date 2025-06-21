@@ -91,7 +91,7 @@ export class MemStorage implements IStorage {
       ...insertStudent, 
       id, 
       studentId,
-      status: insertStudent.status || "active"
+      status: "active"
     };
     this.students.set(id, student);
     return student;
@@ -167,7 +167,7 @@ export class MemStorage implements IStorage {
       id, 
       certificateId, 
       issueDate,
-      status: insertCertificate.status || "issued",
+      status: "issued",
       grade: insertCertificate.grade || null
     };
     this.certificates.set(id, certificate);
